@@ -54,10 +54,12 @@ const Homepage = () => {
   // --- Slide Logic States ---
   const [activeIndex, setActiveIndex] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
+  const [navIsScrolled, setNavIsScrolled] = useState(false); // 1. Added state for mobile scroll
   
   // Refs
   const containerRef = useRef(null);
   const sectionRefs = useRef([]);
+  const touchStartY = useRef(0);
 
   const addToRefs = (el) => {
     if (el && !sectionRefs.current.includes(el)) {
@@ -75,6 +77,13 @@ const Homepage = () => {
       document.body.style.backgroundColor = '#FAFAFA';
     }
   }, [darkMode]);
+
+  // --- 2. NATIVE SCROLL HANDLER (Fixes Mobile Navbar) ---
+  const handleNativeScroll = (e) => {
+    const scrollTop = e.currentTarget.scrollTop;
+    // If scrolled down more than 50px on mobile, turn navbar solid
+    setNavIsScrolled(scrollTop > 50);
+  };
 
   // --- CUSTOM SLOW SCROLL ANIMATION (Desktop Only) ---
   const easeInOutCubic = (t) => {
@@ -121,7 +130,7 @@ const Homepage = () => {
       const targetTop = targetSection.offsetTop;
       smoothScrollTo(targetTop, 1000); 
     } else {
-      // On Mobile: Use Native Scroll (safer for variable heights)
+      // On Mobile: Use Native Scroll
       sectionRefs.current[index].scrollIntoView({ behavior: 'smooth' });
     }
   };
@@ -159,6 +168,31 @@ const Homepage = () => {
     };
   }, [activeIndex, isScrolling]);
 
+  // --- MOBILE: TOUCH LISTENERS ---
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (isScrolling) return;
+
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaY = touchStartY.current - touchEndY;
+    const threshold = 50; 
+
+    if (Math.abs(deltaY) > threshold) {
+      // On mobile we mainly rely on native scroll, but we track swipes 
+      // to update the activeIndex state for the BackToTop button logic if needed.
+      const direction = deltaY > 0 ? 1 : -1;
+      const nextIndex = Math.min(
+        Math.max(activeIndex + direction, 0), 
+        sectionRefs.current.length - 1
+      );
+      // Ideally we don't force scroll on mobile unless it's a very clean snap, 
+      // but we can update state here if we want strict tracking.
+    }
+  };
+
   const handleDownload = (e) => {
     e.preventDefault();
     alert("Downloading Menu PDF...");
@@ -175,7 +209,9 @@ const Homepage = () => {
   return (
     <div 
       ref={containerRef}
-      // IMPORTANT: Remove 'overflow-hidden' on mobile to allow natural scrolling of tall content
+      onScroll={handleNativeScroll} // 3. Attach Scroll Listener
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       className={`h-screen w-full font-sans antialiased transition-colors duration-500 ${theme.bg} ${theme.text} selection:bg-[#C9A25D] selection:text-white overflow-y-scroll md:overflow-hidden`}
     >
       
@@ -187,7 +223,8 @@ const Homepage = () => {
         `}
       </style>
 
-      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} isScrolled={activeIndex > 0} />
+      {/* 4. Updated Navbar Prop logic */}
+      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} isScrolled={activeIndex > 0 || navIsScrolled} />
 
       {/* --- 0. Hero Section (Fixed Height) --- */}
       <header 
@@ -323,11 +360,6 @@ const Homepage = () => {
             </div>
           </FadeIn>
 
-          {/* 
-             Mobile Fix: 
-             We prevent cards from being too tall and overlapping. 
-             On mobile, we display them in a column (grid-cols-1) with spacing.
-          */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
             {[
               { title: "The Gala", img: "https://images.pexels.com/photos/2544829/pexels-photo-2544829.jpeg?auto=compress&cs=tinysrgb&w=800", sub: "Plated Dinners" },
@@ -361,23 +393,23 @@ const Homepage = () => {
         id="gallery" 
         className="h-screen w-full bg-stone-900 snap-start"
       >
-        {/* 
-           Fix: Removed 'flex items-center' and 'py-0'. 
-           The grid now stretches to fill the exact 'h-screen' container.
-        */}
-        <div className="grid grid-cols-2 md:grid-cols-4 h-full w-full">
+        <div className="flex flex-wrap md:flex-nowrap h-full w-full">
           {[
             "https://images.pexels.com/photos/3026808/pexels-photo-3026808.jpeg?auto=compress&cs=tinysrgb&w=800",
             "https://images.pexels.com/photos/3217156/pexels-photo-3217156.jpeg?auto=compress&cs=tinysrgb&w=800",
             "https://images.pexels.com/photos/4552130/pexels-photo-4552130.jpeg?auto=compress&cs=tinysrgb&w=800",
             "https://images.pexels.com/photos/4253320/pexels-photo-4253320.jpeg?auto=compress&cs=tinysrgb&w=800"
           ].map((src, i) => (
-            <div key={i} className="relative group overflow-hidden border border-stone-800/50 w-full h-full">
+            <div 
+              key={i} 
+              className="relative w-1/2 h-1/2 md:w-auto md:h-full md:flex-1 md:hover:flex-[3] border border-stone-800/50 overflow-hidden transition-all duration-1000 ease-in-out group cursor-pointer"
+            >
               <img 
                 src={src} 
                 alt="Detail" 
-                className="w-full h-full object-cover opacity-80 transition-all duration-1000 group-hover:opacity-100 group-hover:scale-105" 
+                className="w-full h-full object-cover opacity-80 transition-all duration-1000 group-hover:opacity-100 group-hover:scale-110" 
               />
+              <div className="absolute inset-0 bg-black/30 md:group-hover:bg-transparent transition-colors duration-700 pointer-events-none"></div>
             </div>
           ))}
         </div>
@@ -496,7 +528,7 @@ const Homepage = () => {
       <button 
         onClick={() => scrollToSection(0)}
         className={`fixed bottom-8 right-8 p-3 ${darkMode ? 'bg-stone-800/50 border-stone-700 hover:bg-white hover:text-stone-900' : 'bg-white/10 border-stone-200 hover:bg-stone-900 hover:text-white'} backdrop-blur-md border rounded-full shadow-lg transition-all duration-500 z-50 ${
-          activeIndex > 0 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
+          (activeIndex > 0 || navIsScrolled) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
         }`}
       >
         <ArrowUp className="w-5 h-5" strokeWidth={1.5} />
