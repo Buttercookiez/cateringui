@@ -1,7 +1,7 @@
+// src/pages/Customer/Menu.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Download, Leaf, Wheat, Coffee, Wine, Search, 
-  ChevronRight, Star 
+  Download, Leaf, Wheat, Star 
 } from 'lucide-react';
 import Navbar from '../../components/customer/Navbar';
 import Footer from '../../components/customer/Footer';
@@ -47,7 +47,7 @@ const Menu = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
 
-  // --- Theme Logic (Synced with Homepage) ---
+  // --- Theme Logic ---
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -153,12 +153,17 @@ const Menu = () => {
   return (
     <div className={`font-sans antialiased min-h-screen transition-colors duration-500 ${theme.bg} ${theme.text} selection:bg-[#C9A25D] selection:text-white`}>
       
+      {/* Add CSS to hide scrollbar for cleaner look */}
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
       <Navbar darkMode={darkMode} setDarkMode={setDarkMode} isScrolled={isScrolled} />
 
       {/* --- Hero Section --- */}
-      <header className="relative h-[60vh] w-full overflow-hidden flex flex-col justify-center items-center bg-stone-900">
+      <header className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden flex flex-col justify-center items-center bg-stone-900">
         <div className="absolute inset-0">
-            {/* Static high-res image for Menu header */}
             <img 
                 src="https://images.pexels.com/photos/1267320/pexels-photo-1267320.jpeg?auto=compress&cs=tinysrgb&w=1600" 
                 alt="Plating Art"
@@ -179,23 +184,31 @@ const Menu = () => {
         </div>
       </header>
 
-      {/* --- Category Navigation --- */}
-      <section className={`sticky top-[70px] z-40 py-6 border-b ${theme.border} ${theme.bg}/95 backdrop-blur-md transition-colors duration-500`}>
-        <div className="max-w-screen-xl mx-auto px-6 overflow-x-auto no-scrollbar">
-            <div className="flex justify-start md:justify-center items-center gap-8 md:gap-12 min-w-max">
-                {categories.map((cat) => (
-                    <button
-                        key={cat}
-                        onClick={() => setActiveCategory(cat)}
-                        className={`text-sm tracking-[0.2em] uppercase transition-all duration-300 pb-1 border-b-2 ${
-                            activeCategory === cat 
-                            ? `text-[#C9A25D] border-[#C9A25D]` 
-                            : `${theme.subText} border-transparent hover:${theme.text}`
-                        }`}
-                    >
-                        {cat}
-                    </button>
-                ))}
+      {/* --- Category Navigation (Responsive) --- */}
+      <section className={`sticky top-[70px] z-40 py-4 md:py-6 border-b ${theme.border} ${theme.bg}/95 backdrop-blur-md transition-colors duration-500`}>
+        <div className="max-w-screen-xl mx-auto px-0 md:px-6">
+            {/* 
+              Responsive Container:
+              - 'overflow-x-auto': Allows scrolling on mobile
+              - 'no-scrollbar': Hides ugly scrollbars (via custom CSS above)
+              - 'px-6': Adds padding so first/last items aren't cut off
+            */}
+            <div className="overflow-x-auto no-scrollbar px-6">
+                <div className="flex justify-start md:justify-center items-center gap-6 md:gap-12 min-w-max">
+                    {categories.map((cat) => (
+                        <button
+                            key={cat}
+                            onClick={() => setActiveCategory(cat)}
+                            className={`text-xs md:text-sm tracking-[0.2em] uppercase transition-all duration-300 pb-1 border-b-2 whitespace-nowrap ${
+                                activeCategory === cat 
+                                ? `text-[#C9A25D] border-[#C9A25D]` 
+                                : `${theme.subText} border-transparent hover:${theme.text}`
+                            }`}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+                </div>
             </div>
         </div>
       </section>
@@ -248,7 +261,7 @@ const Menu = () => {
         </div>
       </section>
 
-      {/* --- Seasonal Highlight (Parallax Break) --- */}
+      {/* --- Seasonal Highlight --- */}
       <section className="relative py-32 bg-fixed bg-center bg-cover" style={{ backgroundImage: "url('https://images.pexels.com/photos/5638268/pexels-photo-5638268.jpeg?auto=compress&cs=tinysrgb&w=1600')" }}>
         <div className="absolute inset-0 bg-black/60"></div>
         <div className="relative z-10 max-w-screen-md mx-auto px-6 text-center text-white">
