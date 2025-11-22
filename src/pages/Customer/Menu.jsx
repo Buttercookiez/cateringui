@@ -45,7 +45,9 @@ const FadeIn = ({ children, delay = 0, direction = 'up' }) => {
 
 const Menu = () => {
   const navigate = useNavigate();
-  const [darkMode, setDarkMode] = useState(false);
+   const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
   const [activeCategory, setActiveCategory] = useState("All");
 
   // --- Slide & Scroll Logic States ---
@@ -70,9 +72,11 @@ const Menu = () => {
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark'); // Save preference
       document.body.style.backgroundColor = '#0c0c0c';
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light'); // Save preference
       document.body.style.backgroundColor = '#FAFAFA';
     }
   }, [darkMode]);

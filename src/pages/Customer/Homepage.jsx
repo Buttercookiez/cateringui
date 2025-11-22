@@ -47,7 +47,9 @@ const FadeIn = ({ children, delay = 0, direction = 'up' }) => {
 const Homepage = () => {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
+   const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
   const [eventType, setEventType] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   
@@ -68,12 +70,14 @@ const Homepage = () => {
   };
 
   // --- Dark Mode Logic ---
-  useEffect(() => {
+    useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark'); // Save preference
       document.body.style.backgroundColor = '#0c0c0c';
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light'); // Save preference
       document.body.style.backgroundColor = '#FAFAFA';
     }
   }, [darkMode]);

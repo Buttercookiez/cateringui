@@ -1,4 +1,5 @@
 // src/App.jsx
+import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 // Customer Pages
@@ -8,16 +9,12 @@ import Venue from './pages/Customer/Venue';
 import Booking from './pages/Customer/Booking';
 import Confirmation from './pages/Customer/Confirmation';
 
-// Admin Pages
-import Dashboard from './pages/Dashboard/Dashboard';
-import Calendar from './pages/Events/Calendar'; // Ensure you created this file from the previous step
+
 
 // Styles
 import './App.css';
-import Inventory from './pages/Inventory/Inventory';
 
-// --- Simple Placeholder Component for Admin pages not yet built ---
-// This prevents the app from crashing when clicking Sidebar links
+// --- Simple Placeholder Component ---
 const AdminPlaceholder = ({ title }) => (
   <div className="flex h-screen w-full items-center justify-center bg-[#FAFAFA] text-stone-900">
     <div className="text-center">
@@ -39,19 +36,14 @@ function App() {
         <Route path="/venue" element={<Venue />} />
         <Route path="/booking" element={<Booking />} />
         <Route path="/confirmation" element={<Confirmation />} />
+      
         
-        {/* --- Admin/Management Routes --- */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/events/calendar" element={<Calendar />} />
-        <Route path="/inventory/inventory" element={<Inventory />} />
+        
         
         {/* Placeholders for remaining Sidebar links */}
         <Route path="/clients" element={<AdminPlaceholder title="Client Records" />} />
         <Route path="/tasks" element={<AdminPlaceholder title="Task Manager" />} />
-        <Route path="/kitchen" element={<AdminPlaceholder title="Kitchen & Prep" />} />
-        
         <Route path="/venue-status" element={<AdminPlaceholder title="Venue Status" />} />
-        <Route path="/finance" element={<AdminPlaceholder title="Financials" />} />
         <Route path="/finance/reports" element={<AdminPlaceholder title="Profit Reports" />} />
 
       </Routes>
